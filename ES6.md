@@ -59,7 +59,7 @@ let {type,info} = getInfo(['lov',001]);
 console.log(type,info);
 ```
 
-### 字符串新增
+### 字符串
 
 ​	``:字符串模板
 
@@ -140,4 +140,154 @@ let json = {
 
 json.show();
 ```
+
+### 数组
+
+#### 循环
+
+​	forEach、map、filter、some、every、reduce、reduceRight
+
+```javascript
+let arr = ['aaa','bbb','ccc'];
+
+			arr.forEach(     //普通的for，没有返回值
+				function(val,index,arr){
+				console.log(this,val,index,arr);//this未指定时默认为window
+				}
+				,document //指定this
+			);	
+
+			// map,filter-------------
+			let arr2 = [
+				{title:'aaa',read:100,hot:false},
+				{title:'bbb',read:90,hot:true},
+				{title:'ccc',read:10,hot:false},
+				{title:'ddd',read:100,hot:true}
+			];
+
+			let rs = arr2.map(   		//数据交互映射，默认情况与forEach相同，有返回值
+				(val,index,arr)=>{
+					let json  = {};
+					json.title = `${val.title}`;
+					json.read = `${val.read}`;
+					json.hot = `${val.hot}`;
+					return json;
+				}
+			);
+			console.log(rs);
+
+			let rs2 = arr2.filter(   		//返回符合条件内容
+				(val,index,arr)=>{
+					return val.hot;
+				}
+			);
+			console.log(rs2);
+
+			// some,every--------------
+			let rs3 = arr.some(   		//查找数组中某一元素符合条件，则返回true
+				(val,index,arr)=>{
+					return val == 'bbb';
+				}
+			);
+			console.log(rs3);
+
+			let rs4 = arr.every(   		//查找数组中，所以元素符合条件时，则返回true
+				(val,index,arr)=>{
+					return val == 'bbb';
+				}
+			);
+			console.log(rs4);
+			// reduce,reduceRight------
+
+			let arr3 = [1,2,3,4,5];
+
+			let rs5 = arr3.reduce( //从左往右循环，reduceRight反之
+				(prev,cur,index,arr)=>{ //prev默认为0，之后为每一次return的结果；cur为当前对应的值
+					return prev+cur;
+				}
+			);
+			console.log(rs5);
+
+			// for...of...-------------
+
+			for(let val of arr){
+				console.log(val);
+			}
+			for(let index of arr.keys()){
+				console.log(index);
+			}
+			for(let item of arr.entries()){
+				console.log(item);
+			}
+			for(let [key,val] of arr.entries()){
+				console.log(key,val);
+			}
+```
+
+#### other -NEW_API
+
+​	**Array.from()**
+
+​	把类数组对象转换成数组，只要具备length就能转换
+
+```javascript
+			let json = {
+				0: 'aaa',
+				1: 'bbb',
+				2: 'ccc',
+				length: 3
+			}
+
+			let rs = Array.from(json);
+			console.log(rs);
+```
+
+​	**Array.of()**
+
+​	将一组值转换为数组
+
+```javascript
+			let arr = Array.of(1,2,3,4);
+			console.log(arr);
+```
+
+​	**find()**	
+
+​	找出第一个符合条件的数组成员，没有返回undefined
+
+​	**findIndex()**	
+
+​	找出第一个符合条件的数组成员的index，没有返回-1
+
+```javascript
+			let arr = ['aaa','bbb','ccc'];
+
+			let rs = arr.findIndex(
+				(val,index,arr)=>{
+					return val == 'ccc';
+				}
+			);
+
+			console.log(rs);
+```
+
+​	**fill()**
+
+```javascript
+			let arr = new Array(10);
+			arr.fill('default',1,3); //在index为1-3间填充‘default’
+
+			console.log(arr);
+```
+
+​	includes()
+
+```javascript
+			let arr = ['aaa','bbb','ccc'];
+			console.log(arr.includes('aaa'));
+```
+
+
+
+​	
 
