@@ -280,14 +280,232 @@ let arr = ['aaa','bbb','ccc'];
 			console.log(arr);
 ```
 
-​	includes()
+​	**includes()**
 
 ```javascript
 			let arr = ['aaa','bbb','ccc'];
 			console.log(arr.includes('aaa'));
 ```
 
+### Map&WeakMap
+
+​	Map：类似于json，但json的key只能为字符串，但map可为任何类型
+
+​	WeakMap：key只能为对象
+
+```javascript
+		let map = new Map();
+		let json = {
+			a: 'aaa',
+			b: 'bbb'
+		}
+		map.set('a','aaa');
+		map.set(json,'json');
+
+		console.log(map);
+		console.log(map.get(json));
+		// console.log(map.delete('a'));
+		console.log(map.has('a'));
+		// console.log(map.clear());
+		
+		for(let [key,value] of map){ 	// 默认调用entries()
+			console.log(key,value);
+		}
+
+		map.forEach((value,key)=>{
+			console.log(value,key);
+		})
+
+		// WeakMap 中key只能为对象
+		let wMap = new WeakMap();
+
+		wMap.set(json,'json');
+		console.log(wMap);
+```
+
+### 数值&Math
+
+​	进制
+
+```javascript
+		//二进制（binary）
+		let b1 = 0b010101;
+
+		console.log(b1);
+		// 八进制(octal)
+		let o1 = 0o12345;
+		console.log(o1);
+```
+
+​	Number：对于大部分数值操作，都归纳到Number对象中
+
+```javascript
+		let a = 1;
+		console.log(Number.isNaN(a));
+		console.log(Number.isFinite(a));	//判断是否为数字
+		console.log(Number.isInteger(a));	//判断是否为整数
+```
+
+​	安全整数：-(2^53-1)到(2^53-1)
+
+```javascript
+		let a = 2**53;
+		console.log(a-1);
+		console.log(Number.isSafeInteger(a));
+		console.log(Number.isSafeInteger(a-1));
+		console.log(Number.MAX_SAFE_INTEGER);
+		console.log(Number.MIN_SAFE_INTEGER);
+```
+
+​	Math
+
+```javascript
+		// trunc 截取整数部分
+		console.log(Math.trunc(4.555));
+		// sign 判断正负数，0
+		console.log(Math.sign(-50));
+		console.log(Math.sign(50));
+		console.log(Math.sign(0));
+		console.log(Math.sign(-0));
+		// cbrt 立方根
+		console.log(Math.cbrt(8));	
+```
+
+### 正则
+
+#### 	捕获
+
+```javascript
+		let  str = '2018-12-23';
+
+		// ?<> 命名捕获
+		let reg = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
+
+		let {year,month,day}  = str.match(reg).groups;
+		console.log(str.match(reg));
+		console.log(year,month,day);
+
+		// 反向捕获 \k<>
+		let reg2 = /^(?<msg>lov)-\k<msg>-\1$/;
+		console.log(reg2.test('a-a-a'));
+		console.log(reg2.test('msg-msg-msg'));
+		console.log(reg2.test('lov-lov-lov'));
+
+		// 结合replace的捕获 $<>
+		str = str.replace(reg,'$<year>/$<month>/$<day>');
+		let rs = str.replace(reg,(...args)=>{
+			let {year,month,day} = args[args.length-1];
+			return `$<year>/$<month>/$<day>`;
+		});
+		console.log(str);
+		console.log(rs);
+```
+
+### 标签函数
+
+```javascript
+		function fn(){
+			console.log(arguments);
+		}
+		fn('lov');
+		fn`lov`;
+```
+
+```javascript
+----------fn('lov')-----------------
+Arguments ["lov", callee: ƒ, Symbol(Symbol.iterator): ƒ]
+0: "lov"
+callee: ƒ fn()
+length: 1
+Symbol(Symbol.iterator): ƒ 
+values()__proto__: Object
+----------fn`lov`-------------------
+Arguments [Array(1), callee: ƒ, Symbol(Symbol.iterator): ƒ]
+0: ["lov", raw: Array(1)]
+callee: ƒ fn()
+length: 1
+Symbol(Symbol.iterator): ƒ values()
+__proto__: Object
+
+```
+
+### Proxy
+
+​	与java中的proxy相似，增强对象的一些功能
+
+​	proxy是代理模式的一种
+
+```javascript
+		let obj = {
+			name: 'lov'
+		};
+
+		let Pobj =  new Proxy(
+			obj,
+			{
+				get(target,property){
+					if(property in target){
+						console.log(`get-${property}`);
+						return target[property];
+					}else{
+						console.warn(`${property} is not exist`);
+						return 'orz';
+					}
+				}
+			}
+		);
+		console.log(Pobj.name);
+		console.log(Pobj.age);
+```
+
+​	Proxy_demo
+
+```javascript
+		const DOM = new Proxy({},	//所有对象
+			{
+				get(target,property){
+					return function(attr={},...children){	//返回函数
+						//通过property新建元素
+						const el = document.createElement(property);
+
+						// 为元素添加属性值
+						for(let key of Object.keys(attr)){
+							el.setAttribute(key,attr[key]);
+						}
+						// 添加子节点
+						for(let child of children){
+							if(typeof child == 'string'){
+								child = document.createTextNode(child);
+							}
+							el.appendChild(child);
+						}
+
+						// 返回节点
+						return el;
+					}
+				}
+			}
+		);
+
+		let oDiv = DOM.div(
+			{id:'div1',class:'container'},
+			'Lov','Welcome','!',
+			DOM.a({href:'www.baidu.com'},'Baidu'), //嵌套
+			DOM.a({},
+				DOM.li({},'1-------'),
+				DOM.li({},'2-------'),
+				DOM.li({},'3-------'),
+				DOM.li({},'4-------')
+			)
+		);
+
+		console.log(oDiv);
+
+		window.onload = function(){
+			document.body.appendChild(oDiv);
+		}
+
+```
 
 
-​	
 

@@ -9,12 +9,52 @@
 	
 	<script type="text/javascript">
 		
-		window.onload = ()=>{
-			
-			let arr = ['aaa','bbb','ccc'];
-			console.log(arr.includes('aaa'));
+		const DOM = new Proxy({},	//所有对象
+			{
+				get(target,property){
+					return function(attr={},...children){	//返回函数
+						//通过property新建元素
+						const el = document.createElement(property);
 
-		};
+						// 为元素添加属性值
+						for(let key of Object.keys(attr)){
+							el.setAttribute(key,attr[key]);
+						}
+						// 添加子节点
+						for(let child of children){
+							if(typeof child == 'string'){
+								child = document.createTextNode(child);
+							}
+							el.appendChild(child);
+						}
+
+						// 返回节点
+						return el;
+					}
+				}
+			}
+		);
+
+		let oDiv = DOM.div(
+			{id:'div1',class:'container'},
+			'Lov','Welcome','!',
+			DOM.a({href:'www.baidu.com'},'Baidu'), //嵌套
+			DOM.a({},
+				DOM.li({},'1-------'),
+				DOM.li({},'2-------'),
+				DOM.li({},'3-------'),
+				DOM.li({},'4-------')
+			)
+		);
+
+		console.log(oDiv);
+
+		window.onload = function(){
+			document.body.appendChild(oDiv);
+		}
+
+
+
 
 	</script>
 	
