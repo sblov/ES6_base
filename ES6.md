@@ -4,6 +4,8 @@
 
 #### let
 
+​	let只相对于区域，而var直接是全局window	
+
 ​	没有预解析，不存在变量的提升；在代码块内，只要在let定义变量之前使用，都会报错
 
 ​	同一个作用域里，不能重复定义变量
@@ -287,6 +289,397 @@ let arr = ['aaa','bbb','ccc'];
 			console.log(arr.includes('aaa'));
 ```
 
+### 对象
+
+```javascript
+		   let name = 'lov';
+           let age = 21;
+            
+           let json = {
+                name, //name:name
+                age,  //age:age
+                show(){  //最好别用箭头函数，会有this指向问题
+                    console.log(`name:${name}`);
+                }
+            }
+            
+            console.log(json);
+            json.show();
+            
+            // Object.is() 比较两个值是否相等
+            console.log(NaN == NaN); //false
+            console.log(Number.isNaN(NaN));
+            console.log(Object.is(NaN,NaN));
+
+            console.log(+0 == -0);
+            console.log(Object.is(+0,-0));
+
+            // Object.assign() 合并对象
+            let json_1 = {a: 1};
+            let json_2 = {b: 2,a: 4};
+            let json_3 = {c: 3};
+
+            let rs = Object.assign({},json_1,json_2,json_3);
+            console.log(rs);
+
+            let arr = ['a','b','c'];
+            let rs_1 = Object.assign([],arr);
+            console.log(rs_1);
+
+            // Object.keys()
+            // Object.entries()
+            // Object.values()
+            let {keys,values,entries} = Object;
+
+            let json_4 = {a:1,b:2,c:3};
+            for(let key of keys(json_4)){
+                console.log(key);
+            }
+            for(let value of values(json_4)){
+                console.log(value);
+            }
+            for(let entry of entries(json_4)){
+                console.log(entry);
+            }
+
+            // 对象中的扩展运算符
+            let {a,...b} = json_4;
+            console.log(a,b);
+            console.log({...json_4});
+```
+
+### Promise
+
+​	解决异步回调函数问题，解决传统的回调嵌套问题
+
+```javascript
+			let a = 1;
+            let promise = new Promise((resolve,reject)=>{
+                if(a == 10){
+                    resolve('success');    // true调用resolve
+                }else{
+                    reject('fail');         //false调用reject
+                }
+            });
+            /*promise.then(res=>{
+                console.log(res);   //suucess
+            },err=>{    
+                console.log(err);   //fail
+            });
+            promise.catch(err=>{    //catch
+                console.log(`err:${err}`);
+            })*/
+            promise.then(res=>{
+                console.log(res);   
+            }).catch(err=>{    
+                console.log(`err:${err}`);
+            });
+
+            // Promise.resolve('aaa') 将现有的内容转换为promise对象，并为resolve状态，new Promise(resolve=>{resolve('aaa')})
+            // Promise.reject() 将现有的内容转换为promise对象，并为reject状态
+
+            // Promise.all() 打包所有的promise，且必须都是 resolve
+            // Promise.race() 返回第一个值，为reject则抛出error
+            let p1 = Promise.resolve('aaa');
+            let p2 = Promise.resolve('bbb');
+            let p3 = Promise.resolve('ccc');
+            let p4 = Promise.reject('ddd');
+
+            Promise.all([p1,p2,p3]).then(res=>{
+                console.log(res);
+            });
+            Promise.race([p2,p4,p1]).then(res=>{
+                console.log(res);
+            }).catch(err=>{
+                console.log(err);
+            });
+            
+            //demo
+            let status = 1;
+            let userLogin = (resolve,reject)=>{
+                setTimeout(()=>{
+                    if(status == 1){
+                        resolve({data:'xxx',msg:'xxx',token:'xxxx'});
+                    }else{
+                        reject('login fail');
+                    }
+                },1000);
+            };
+            let getInfo = (resolve,reject)=>{
+                setTimeout(()=>{
+                    if(status == 1){
+                        resolve({data:'INFOxxx',msg:'xxx',token:'xxxx'});
+                    }else{
+                        reject('login fail');
+                    }
+                },1000);
+            };
+
+            new Promise(userLogin).then(res=>{
+                console.log('login success');
+                console.log(res);
+                return new Promise(getInfo);
+            }).then(res=>{
+                console.log('Info success');
+                console.log(res);
+            })
+```
+
+### 模块
+
+​	添加type="module"
+​    	import导入模块路径，可以是相对，绝对
+​    	import ... from '...js'
+   	 import '...js'，相当于引入整个js文件
+  	通过as在模块或import中起别名
+   	 import有代码提升的效果，代码块会先执行import
+​    	export导出需要用{}引用，export default导出可直接引用
+​    	导入的模块内容发生改变时，引用也会同步改变
+​    	import(): 动态引入，类似node的require()，不可用于if语句	
+
+```javascript
+		// import * as mod_1 from './mod_1.js'
+        // import {sqrt,aaa,b as bbb,c} from './mod_1.js'
+        import json,{sqrt,aaa,b as bbb,c,ch} from './mod_1.js'
+            console.log(json);
+            console.log(sqrt(20));
+            console.log(aaa,bbb,c);
+            
+            console.log(`ch:${ch}`);
+            setTimeout(()=>{
+                console.log(`ch:${ch}`);
+                
+            },2000);
+            
+            // 动态引入
+            import('./mod_1.js').then(res=>{
+                    console.log(res);
+                });
+            
+            // 结合promise.all
+            Promise.all([
+                import('./mod_1.js'),
+                import('./mod_3.js')
+            ]).then(res=>{
+                // console.log(mod_1,mod_1);
+                console.log(res);
+            });
+```
+
+### Class
+
+​	方法名可以用表达式
+​    	class没有预解析
+​    	对于setter与getter，内部不可直接调用对应属性	
+
+```javascript
+		// origin
+        /*function Person(name,age){
+            this.name = name;
+            this.age = age;
+        };
+        Person.prototype.showName = function(){
+            return `name:${this.name}`;
+        };*/
+        
+        //const Person = class{}; 
+        let showA = 'showAge';
+        class Person{ //type => function
+            constructor(name,age){ //构造函数默认执行
+                console.log('constructor......');
+                this.name = name;
+                this.age = age;
+            }
+            showName(){
+                return `name:${this.name}`;
+            }
+            [showA](){
+                return `age:${this.age}`;
+            }
+            set com(val){          //setter
+                
+                console.log('set com');
+            }
+            get com(){              // getter
+
+                return 'dd';    
+            }
+
+            static showMsg(){       //静态方法
+                console.log('show every thing');
+            }
+        };
+
+        let person = new Person('lov',12);
+        console.log(person[showA](),person.showAge());
+
+        person.com = 'lob';
+        console.log(person.com);
+
+        Person.showMsg();
+```
+
+#### 继承	
+
+```javascript
+		 /*// 父类
+        function Person(name){
+            this.name = name;
+        }
+        Person.prototype.showName = function(){
+            return `name:${this.name}`;
+        }
+        
+        //子类
+        function Student(name,skill){
+            Person.call(this,name);
+            this.skill = skill;
+        }
+        Student.prototype = new Person();
+        
+        */
+       
+       class Person{
+           
+           constructor(name){
+               this.name = name;
+            }
+            showName(){
+                return `name:${this.name}`;
+
+            }
+        }
+        
+        class Student extends Person{
+            constructor(name,skill){
+                super(name);
+                this.skill = skill;
+            }
+            showName(){ //overload
+                return super.showName(); 
+
+            }
+        }
+
+        let stud = new Student('lov','gaming');
+        console.log(stud.showName());
+```
+
+### Symbol& generator
+
+#### Symbol
+
+​	新数据类型：Symbol
+​        Symbol返回的值是唯一值
+​        在for..in.. 循环中无法获取symbol类型	
+
+```javascript
+		let sy = Symbol('aaa');
+       let sy2 = Symbol('aaa');
+       console.log(typeof sy);
+       console.log(Object.is(sy,sy2));
+
+       let json = {
+           a: 1,
+           b: 2,
+           [sy]: 'json'
+       }
+       // 无法循环出symbol类型
+       for(let item in json){
+           console.log(item);
+       }
+```
+
+#### generator函数
+
+​        解决异步，深度嵌套，Promise到aysnc的过渡特性
+​        函数中，根据yield顺序执行
+
+```javascript
+		function * gen(){
+           yield 'aaa';
+           yield 'bbb';
+           return 'ccc';
+       }
+       let g = gen();
+    //    console.log(g.next());
+    //    console.log(g.next());
+    //    console.log(g.next());   //当返回的json中的done为true时停止
+    //    console.log(g.next());
+
+       for(let val of g){   //for...of..自动遍历 ，不会遍历return的内容
+           console.log(val);
+       }
+    //    解构访问
+       let [a,b,c] = gen();
+       console.log(a,b,c);
+    //    扩展访问
+       console.log(...gen());
+    //    Array.from()
+       console.log(Array.from(gen())); 
+```
+
+### async&await
+
+​    	await只能放到async函数中
+​    	相比generator语义化更强
+​    	await后面可以时promise对象，也可以时数字，字符串，布尔
+​    	async函数返回是一个promise对象
+​    	只要await语句后面的Promise状态变成reject，那么整个async函数会中断执行
+
+```javascript
+		async function fn() {
+            await 'aa';
+            // throw new Error('error');
+            try {
+                let p1 = await Promise.reject('error'); // try-catch
+                let p2 = await Promise.resolve('success');
+            } catch (error) { }
+            console.log(p1);
+            console.log(p2);    
+            return 'aaa';
+        }
+        fn().then(res=>{
+            console.log(res);
+        }).catch(err=>{
+            console.log(err);
+        });
+```
+
+### Set&WeakSet
+
+​    	java中set相似，不能有重复值
+​    	set中存储数组，weakset存储json，但都可通过add添加json为数组元素
+
+```javascript
+		let setArr = new Set(['a','a','b','c']);
+        console.log(setArr);
+        setArr.delete('a'); 
+        setArr.add('d');
+        console.log(setArr);
+        console.log(setArr.has('a'));
+        console.log(setArr.size);
+        
+        for(let item of setArr.entries()){
+            console.log(item);
+        }
+        setArr.forEach((value,index) => {
+            console.log(value,index);
+        });
+
+        setArr = new Set([...setArr].map(val=>val.repeat(2)));
+        console.log(setArr);
+
+        setArr.clear();
+        console.log(setArr);   
+
+        let wSet = new WeakSet();
+        wSet.add({a:1,b:2});
+        console.log(wSet);
+```
+
+
+
 ### Map&WeakMap
 
 ​	Map：类似于json，但json的key只能为字符串，但map可为任何类型
@@ -458,7 +851,7 @@ __proto__: Object
 		console.log(Pobj.age);
 ```
 
-​	Proxy_demo
+#### 	Proxy_demo
 
 ```javascript
 		const DOM = new Proxy({},	//所有对象
@@ -507,5 +900,85 @@ __proto__: Object
 
 ```
 
+#### 	**set**、**delete**、**has**	
 
+```javascript
+			let obj = new Proxy({},{
+            set(target,prop,value){ // 在属性赋值时调用
+            //    console.log(target,prop,value);
+                if(prop == 'age'){
+                    if(!Number.isInteger(value)){
+                        throw new TypeError('Must be Integer!');
+                    }
+                    if(value > 200){
+                        throw new RangeError('Out of Range!');
+                    }
+                }
+                target[prop] = value;
+                console.log(`${prop} set success.`);
+            },
+            deleteProperty(target,prop){
+                delete target[prop];
+                console.log(`${prop} has been deleted!`);
+            },
+            has(target,prop){
+                console.log(`Has ${prop} in Target ?`);
+               
+                return prop in target;
+            }
+
+        });
+
+        obj.a = 1;
+        obj.age = 200;
+
+        delete obj.a;
+        console.log('a' in obj);
+```
+
+####  	**apply**
+
+```javascript
+		function fn(a,b){
+            return a+b;
+        }
+
+        let newFn  = new Proxy(fn,{
+            apply(target,context,args){
+                // console.log(target,context,args);
+                // console.log(...arguments);
+                return Reflect.apply(...arguments)**2; 
+            }
+        })
+
+        console.log(newFn(1,3));
+```
+
+### Reflect
+
+​	将js语言方面的东西直接放到reflect上，通过reflect直接调用
+
+```javascript
+		function fn(...args){
+            console.log(this);
+            console.log(args);
+        }
+
+        // fn(1,2,3);
+        // fn.call('aaa',1,2,3);
+        // fn.apply('aaa',[1,2,3]);
+        // Reflect.apply(目标方法,this对象,参数)
+        Reflect.apply(fn,'aaa',[1,2,3])
+        
+        // console.log('apply' in  Object);
+        console.log(Reflect.has(Object,'apply'));
+
+        let json = {
+            a:1,
+            b:2
+        }
+
+        Reflect.deleteProperty(json,'a');
+        console.log(json);
+```
 

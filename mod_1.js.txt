@@ -1,0 +1,27 @@
+export default {
+    json : {
+        a: 1,
+        b: 2
+    }
+
+}
+export const sqrt = Math.sqrt;
+console.log('mod_1 loaded');
+
+const a = 1;
+const b = 2;
+const c = 3;
+export{
+    a as  aaa,
+    b,
+    c
+}
+
+export let ch = 10;
+
+setTimeout(()=>{
+    ch = 100;
+
+},1000);
+
+

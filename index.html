@@ -1,62 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- <script src="mod_1.js"></script> -->
 </head>
 <body>
-	
-	<script type="text/javascript">
-		
-		const DOM = new Proxy({},	//所有对象
-			{
-				get(target,property){
-					return function(attr={},...children){	//返回函数
-						//通过property新建元素
-						const el = document.createElement(property);
+    
+    <script>
+        
+        function fn(...args){
+            console.log(this);
+            console.log(args);
+        }
 
-						// 为元素添加属性值
-						for(let key of Object.keys(attr)){
-							el.setAttribute(key,attr[key]);
-						}
-						// 添加子节点
-						for(let child of children){
-							if(typeof child == 'string'){
-								child = document.createTextNode(child);
-							}
-							el.appendChild(child);
-						}
+        // fn(1,2,3);
+        // fn.call('aaa',1,2,3);
+        // fn.apply('aaa',[1,2,3]);
+        // Reflect.apply(目标方法,this对象,参数)
+        Reflect.apply(fn,'aaa',[1,2,3])
+        
+        // console.log('apply' in  Object);
+        console.log(Reflect.has(Object,'apply'));
 
-						// 返回节点
-						return el;
-					}
-				}
-			}
-		);
+        let json = {
+            a:1,
+            b:2
+        }
 
-		let oDiv = DOM.div(
-			{id:'div1',class:'container'},
-			'Lov','Welcome','!',
-			DOM.a({href:'www.baidu.com'},'Baidu'), //嵌套
-			DOM.a({},
-				DOM.li({},'1-------'),
-				DOM.li({},'2-------'),
-				DOM.li({},'3-------'),
-				DOM.li({},'4-------')
-			)
-		);
-
-		console.log(oDiv);
-
-		window.onload = function(){
-			document.body.appendChild(oDiv);
-		}
+        Reflect.deleteProperty(json,'a');
+        console.log(json);
 
 
 
-
-	</script>
-	
+       
+        
+        
+    
+    </script>
 </body>
 </html>
